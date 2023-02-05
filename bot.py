@@ -1,40 +1,36 @@
 import os
 import discord
-import json
 from dotenv import load_dotenv
+from features.creator.functions import ServerCreator
+from features.music.functions import Music
 
+""" ===== Load info and create client ===== """
 load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD = os.getenv('DISCORD_GUILD')
-
+token = os.getenv('DISCORD_TOKEN')
+guild = os.getenv('DISCORD_GUILD')
 client = discord.Client(intents=discord.Intents.default())
 
-async def create_categories_and_channels(guild, categories_channels_dict : dict):
-    categories = categories_channels_dict['categories'] 
-    for cat in categories:
-        category = await guild.create_category(cat['category_name'])
-        channels = cat['channels']
-        for chan in channels:
-            await guild.create_text_channel(chan['channel_name'], category=category)
 
-async def create_roles(guild, roles_dict : dict):
-    roles = roles_dict['roles']
-    for role in roles:
-        perms = discord.Permissions(permissions=role['permission_code'])
-        await guild.create_role(name=role['role_name'], permissions=perms)
+""" ===== Add class features to main program ===== """
+
+creator = ServerCreator(client, guild)
+music = Music(client)
+
 
 @client.event
 async def on_ready():
     for guild in client.guilds:
-        if guild.name == GUILD:
+        if guild.name == guild:
             break
 
-    with open('roles.json', 'r') as f: 
-        roles_dict = json.load(f)
-        await create_roles(guild, roles_dict) 
+    # await creator.create_roles()
+    # await creator.create_categories_and_channels() 
 
-    """with open('channels.json', 'r') as f: 
-        categories_channels_dict = json.load(f)
-        await create_categories_and_channels(guild, categories_channels_dict)"""
+@client.event
+async def on_message(message):
+    if message.content == 'hello':
+        await message.channel.send("Hi there!")
+        
 
-client.run(TOKEN)
+""" ===== Add class features to main program ===== """
+client.run(token)
