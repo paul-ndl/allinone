@@ -1,0 +1,32 @@
+{
+  "categories": [
+    {
+      "category_name": "CATEGORY 1",
+      "channels": [
+        {
+          "channel_name": "channel 1"
+        },
+        {
+          "channel_name": "channel 2"
+        },
+        {
+          "channel_name": "channel 3"
+        }
+      ]
+    },
+    {
+      "category_name": "CATEGORY 2",
+      "channels": [
+        {
+          "channel_name": "channel 1"
+        },
+        {
+          "channel_name": "channel 2"
+        },
+        {
+          "channel_name": "channel 3"
+        }
+      ]
+    }
+  ]
+}

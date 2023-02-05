@@ -1,0 +1,12 @@
+{
+  "roles": [
+    {
+      "role_name": "Homme",
+      "permission_code": 8
+    },
+    {
+      "role_name": "Femme",
+      "permission_code": 8
+    }
+  ]
+}
