@@ -2,13 +2,16 @@ import discord
 import json
 
 class ServerCreator:
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot, guild):
+        self.bot = bot
+        self.guild = guild
         
     """
     Function to create categories and channels from given dict
     """
-    async def create_categories_and_channels(self, guild):
+    async def create_categories_and_channels(self):
+        guild = self.bot.get_guild(self.guild)
+        print(guild)
         with open('./features/creator/channels.json', 'r') as f: 
             categories_channels_dict = json.load(f)
             categories = categories_channels_dict['categories'] 
@@ -21,7 +24,8 @@ class ServerCreator:
     """
     Function to create roles from given dict
     """
-    async def create_roles(self, guild):
+    async def create_roles(self):
+        guild = self.bot.get_guild(self.guild)
         with open('./features/creator/roles.json', 'r') as f: 
             roles_dict = json.load(f)
             roles = roles_dict['roles']
