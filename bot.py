@@ -13,7 +13,7 @@ client = discord.Client(intents=discord.Intents.default())
 
 """ ===== Add class features to main program ===== """
 
-creator = ServerCreator(client, guild)
+creator = ServerCreator(client)
 music = Music(client)
 
 
@@ -23,8 +23,8 @@ async def on_ready():
         if guild.name == guild:
             break
 
-    # await creator.create_roles()
-    # await creator.create_categories_and_channels() 
+    await creator.create_roles(guild)
+    await creator.create_categories_and_channels(guild) 
 
 @client.event
 async def on_message(message):
