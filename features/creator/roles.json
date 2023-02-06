@@ -2,11 +2,11 @@
   "roles": [
     {
       "role_name": "Homme",
-      "permission_code": 8
+      "permission_code": 0
     },
     {
       "role_name": "Femme",
-      "permission_code": 8
+      "permission_code": 0
     }
   ]
 }
