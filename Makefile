@@ -1,5 +1,8 @@
-.PHONY: install enable restart
+.PHONY: install enable restart run
 INSTALL_DST=/etc/systemd/system
+
+run:
+    python3 ./bot.py
 
 install:
 	envsubst < allinone.service > /tmp/allinone.service
