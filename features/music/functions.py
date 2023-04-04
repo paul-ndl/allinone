@@ -9,7 +9,9 @@ import sys
 from discord.ext import commands
 from async_timeout import timeout
 from functools import partial
-from youtube_dl import YoutubeDL
+
+from discord.ext.commands import CommandInvokeError
+from youtube_dl import YoutubeDL, DownloadError
 
 ytdlopts = {
     'format': 'bestaudio/best',
@@ -244,7 +246,12 @@ class Music(commands.Cog):
 
         player = self.get_player(ctx)
 
-        data = await YTDLSource.search_source(ctx, search, loop=self.bot.loop, download=False)
+        try:
+            data = await YTDLSource.search_source(ctx, search, loop=self.bot.loop, download=False)
+        except DownloadError:
+            embed = discord.Embed(title="Cannot retrieve video from url", description=search)
+            await ctx.send(embed=embed)
+            return
 
         if 'entries' in data:
             first = data["entries"][0]
@@ -304,8 +311,11 @@ class Music(commands.Cog):
         await ctx.send(f'**`{ctx.author}`**: Skipped the song!')
 
     @commands.command(name='queue', aliases=['q', 'playlist'])
-    async def queue_info(self, ctx):
+    async def queue_info(self, ctx, *, length=10):
         """Retrieve a basic queue of upcoming songs."""
+        if length == 0:
+            return await ctx.send('Ha ha, so funny. Try with something bigger...')
+
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
@@ -315,8 +325,8 @@ class Music(commands.Cog):
         if player.queue.empty():
             return await ctx.send('There are currently no more queued songs.')
 
-        # Grab up to 5 entries from the queue...
-        upcoming = list(itertools.islice(player.queue._queue, 0, 5))
+        # Grab up to 10 entries from the queue...
+        upcoming = list(itertools.islice(player.queue._queue, 0, length))
 
         fmt = '\n'.join(f'**`{_["title"]}`**' for _ in upcoming)
         embed = discord.Embed(title=f'Upcoming - Next {len(upcoming)}', description=fmt)
