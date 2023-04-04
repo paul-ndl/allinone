@@ -28,4 +28,5 @@ async def on_message(message):
 
 
 """ ===== Add class features to main program ===== """
-bot.run(token)
+if __name__ == "__main__":
+    bot.run(token)

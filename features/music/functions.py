@@ -57,17 +57,16 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return self.__getattribute__(item)
 
     @classmethod
-    async def create_source(cls, ctx, search: str, *, loop, download=False):
+    async def search_source(cls, ctx, search: str, *, loop, download=False):
         loop = loop or asyncio.get_event_loop()
 
         to_run = partial(ytdl.extract_info, url=search, download=download)
         data = await loop.run_in_executor(None, to_run)
 
-        if 'entries' in data:
-            # take first item from a playlist
-            data = data['entries'][0]
+        return data
 
-        await ctx.send(f'```ini\n[Added {data["title"]} to the Queue.]\n```')
+    @classmethod
+    async def create_source(cls, ctx, data: dict, *, loop, download=False):
 
         if download:
             source = ytdl.prepare_filename(data)
@@ -245,11 +244,22 @@ class Music(commands.Cog):
 
         player = self.get_player(ctx)
 
-        # If download is False, source will be a dict which will be used later to regather the stream.
-        # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
-        source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=False)
+        data = await YTDLSource.search_source(ctx, search, loop=self.bot.loop, download=False)
 
-        await player.queue.put(source)
+        if 'entries' in data:
+            first = data["entries"][0]
+            last = data["entries"][-1]
+            await ctx.send(f'```ini\n[Added {len(data["entries"])} titles from {first["title"]} to {last["title"]} to the Queue.]\n```')
+            for title in data["entries"]:
+                source = await YTDLSource.create_source(ctx, title, loop=self.bot.loop, download=False)
+                await player.queue.put(source)
+
+        else:
+            await ctx.send(f'```ini\n[Added {data["title"]} to the Queue.]\n```')
+            # If download is False, source will be a dict which will be used later to regather the stream.
+            # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
+            source = await YTDLSource.create_source(ctx, data, loop=self.bot.loop, download=False)
+            await player.queue.put(source)
 
     @commands.command(name='pause')
     async def pause_(self, ctx):
