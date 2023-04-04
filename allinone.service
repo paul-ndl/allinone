@@ -1,0 +1,13 @@
+[Unit]
+Description=AllInOne Discord bot
+Documentation=https://github.com/paul-ndl/allinone/
+After=network.target
+
+[Service]
+Type=idle
+User=${USER}
+Group=${USER}
+ExecStart=bash -c 'cd ${PWD} && make run'
+
+[Install]
+WantedBy=network-online.target
