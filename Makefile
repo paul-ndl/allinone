@@ -2,7 +2,7 @@
 INSTALL_DST=/etc/systemd/system
 
 run:
-    python3 ./bot.py
+	python3 ./bot.py
 
 install:
 	envsubst < allinone.service > /tmp/allinone.service
