@@ -10,7 +10,6 @@ from discord.ext import commands
 from async_timeout import timeout
 from functools import partial
 
-from discord.ext.commands import CommandInvokeError
 from youtube_dl import YoutubeDL, DownloadError
 
 ytdlopts = {

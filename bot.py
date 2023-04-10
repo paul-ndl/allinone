@@ -18,6 +18,7 @@ bot = commands.Bot(command_prefix='$', intents=discord.Intents.all())
 async def on_ready():
     await bot.add_cog(ServerCreator(bot))
     await bot.add_cog(Music(bot))
+    print(f"{bot.user} is Ready")
 
 @bot.event
 async def on_message(message):
