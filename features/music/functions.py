@@ -210,7 +210,7 @@ class Music(commands.Cog):
 
         return player
 
-    @commands.command(name='connect', aliases=['join'])
+    @commands.command(name='connect', aliases=['join', 'c'])
     async def connect_(self, ctx):
         try:
             channel = ctx.author.voice.channel
