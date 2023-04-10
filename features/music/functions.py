@@ -242,11 +242,12 @@ class Music(commands.Cog):
 
         if not vc:
             await ctx.invoke(self.connect_)
+            print("Connected to the voice")
 
         player = self.get_player(ctx)
-
         try:
             data = await YTDLSource.search_source(ctx, search, loop=self.bot.loop, download=False)
+            print("Downloaded info")
         except DownloadError:
             embed = discord.Embed(title="Cannot retrieve video from url", description=search)
             await ctx.send(embed=embed)
