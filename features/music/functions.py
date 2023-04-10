@@ -229,7 +229,9 @@ class Music(commands.Cog):
         else:
             try:
                 await channel.connect()
+                print("I should be connected now ffs")
             except asyncio.TimeoutError:
+                print("Connection failed")
                 raise VoiceConnectionError(f'Connecting to channel: <{channel}> timed out.')
         embed = discord.Embed(title="Joined A Call")
         embed.add_field(name="Connected To :", value=channel, inline=True)
