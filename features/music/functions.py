@@ -10,7 +10,7 @@ from discord.ext import commands
 from async_timeout import timeout
 from functools import partial
 
-from youtube_dl import YoutubeDL, DownloadError
+from yt_dlp import YoutubeDL, DownloadError
 
 ytdlopts = {
     'format': 'bestaudio/best',
