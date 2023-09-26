@@ -58,21 +58,18 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return self.__getattribute__(item)
 
     @classmethod
-    async def search_source(cls, ctx, search: str, *, loop, download=False):
+    async def search_source(cls, ctx, search: str, *, loop):
         loop = loop or asyncio.get_event_loop()
 
-        to_run = partial(ytdl.extract_info, url=search, download=download)
+        to_run = partial(ytdl.extract_info, url=search, download=True)
         data = await loop.run_in_executor(None, to_run)
 
         return data
 
     @classmethod
-    async def create_source(cls, ctx, data: dict, *, loop, download=False):
+    async def create_source(cls, ctx, data: dict, *, loop):
 
-        if download:
-            source = ytdl.prepare_filename(data)
-        else:
-            return {'webpage_url': data['webpage_url'], 'requester': ctx.author, 'title': data['title']}
+        source = ytdl.prepare_filename(data)
 
         return cls(discord.FFmpegPCMAudio(source), data=data, requester=ctx.author)
 
@@ -82,8 +79,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
         Since Youtube Streaming links expire."""
         loop = loop or asyncio.get_event_loop()
         requester = data['requester']
-
-        to_run = partial(ytdl.extract_info, url=data['webpage_url'], download=False)
+        
+        to_run = partial(ytdl.extract_info, url=data['webpage_url'], download=True)
         data = await loop.run_in_executor(None, to_run)
 
         return cls(discord.FFmpegPCMAudio(data['url']), data=data, requester=requester)
@@ -103,7 +100,7 @@ class MusicPlayer(commands.Cog):
         self._guild = ctx.guild
         self._channel = ctx.channel
         self._cog = ctx.cog
-
+        self.current_file_name = None
         self.queue = asyncio.Queue()
         self.next = asyncio.Event()
 
@@ -118,6 +115,7 @@ class MusicPlayer(commands.Cog):
         await self.bot.wait_until_ready()
 
         while not self.bot.is_closed():
+            self.delete_download()
             self.next.clear()
 
             try:
@@ -139,6 +137,7 @@ class MusicPlayer(commands.Cog):
 
             source.volume = self.volume
             self.current = source
+            self.current_file_name = source.original._process.args[2]
 
             self._guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
             self.np = await self._channel.send(f'**Now Playing:** `{source.title}` requested by '
@@ -152,8 +151,15 @@ class MusicPlayer(commands.Cog):
             try:
                 # We are no longer playing this song...
                 await self.np.delete()
+                self.delete_download()
             except discord.HTTPException:
                 pass
+
+    def delete_download(self):
+        import os
+        if self.current_file_name:
+            os.remove(self.current_file_name)
+            self.current_file_name = None
 
     def destroy(self, guild):
         """Disconnect and cleanup the player."""
@@ -249,7 +255,7 @@ class Music(commands.Cog):
 
         player = self.get_player(ctx)
         try:
-            data = await YTDLSource.search_source(ctx, search, loop=self.bot.loop, download=False)
+            data = await YTDLSource.search_source(ctx, search, loop=self.bot.loop)
             print("Downloaded info")
         except DownloadError:
             embed = discord.Embed(title="Cannot retrieve video from url", description=search)
@@ -261,14 +267,14 @@ class Music(commands.Cog):
             last = data["entries"][-1]
             await ctx.send(f'```ini\n[Added {len(data["entries"])} titles from {first["title"]} to {last["title"]} to the Queue.]\n```')
             for title in data["entries"]:
-                source = await YTDLSource.create_source(ctx, title, loop=self.bot.loop, download=False)
+                source = await YTDLSource.create_source(ctx, title, loop=self.bot.loop)
                 await player.queue.put(source)
 
         else:
             await ctx.send(f'```ini\n[Added {data["title"]} to the Queue.]\n```')
             # If download is False, source will be a dict which will be used later to regather the stream.
             # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
-            source = await YTDLSource.create_source(ctx, data, loop=self.bot.loop, download=False)
+            source = await YTDLSource.create_source(ctx, data, loop=self.bot.loop)
             await player.queue.put(source)
 
     @commands.command(name='pause')
